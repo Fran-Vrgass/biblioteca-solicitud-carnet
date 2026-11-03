@@ -1,5 +1,4 @@
-
-
+```javascript
 const SUPABASE_URL = "https://yhzoryuhrrkggtlyppjt.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Kaw2rZJutbc5BmrIrEmN6Q_A7kSUebl";
 
@@ -45,8 +44,8 @@ formulario.addEventListener("submit", async (e) => {
             return;
         }
 
-        formulario.reset();
-        mensaje.textContent = "¡Solicitud recibida! El personal de la biblioteca revisará tus datos.";
+        document.getElementById("seccionFormulario").style.display = "none";
+        document.getElementById("seccionConfirmacion").style.display = "block";
 
     } catch {
         mensaje.textContent = "No se pudo conectar con el servidor. Intentá nuevamente.";
@@ -54,3 +53,4 @@ formulario.addEventListener("submit", async (e) => {
         boton.disabled = false;
     }
 });
+```
