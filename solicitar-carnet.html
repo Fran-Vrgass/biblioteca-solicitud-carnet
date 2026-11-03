@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de carné | Biblioteca Pública</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="contenedor">
+        <section class="seccion">
+            <h1>Solicitud de carné</h1>
+            <p>Biblioteca Pública Miguel Obregón Lizano</p>
+
+            <form id="formularioSolicitud">
+
+                <label for="nombreCompleto">Nombre completo</label>
+                <input type="text" id="nombreCompleto" required>
+
+                <label for="cedula">Cédula</label>
+                <input type="text" id="cedula" required>
+
+                <label for="fechaNacimiento">Fecha de nacimiento</label>
+                <input type="date" id="fechaNacimiento" required>
+
+                <label for="correo">Correo electrónico</label>
+                <input type="email" id="correo" required>
+
+                <label for="telefono">Teléfono</label>
+                <input type="tel" id="telefono">
+
+                <label for="domicilio">Domicilio</label>
+                <textarea id="domicilio" rows="3"></textarea>
+
+                <label for="discapacidad">¿Tiene alguna discapacidad?</label>
+                <select id="discapacidad" required>
+                    <option value="">Seleccione una opción</option>
+                    <option value="false">No</option>
+                    <option value="true">Sí</option>
+                </select>
+
+                <button type="submit">Enviar solicitud</button>
+
+                <p id="mensajeSolicitud"></p>
+
+            </form>
+        </section>
+    </main>
+
+    <script src="solicitar-carnet.js"></script>
+
+</body>
+</html>
