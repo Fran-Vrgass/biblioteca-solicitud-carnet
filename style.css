@@ -323,3 +323,30 @@ button {
         min-width: 550px;
     }
 }
+/* PANTALLA DE CONFIRMACIÓN */
+
+.confirmacion {
+    text-align: center;
+    padding: 35px 25px;
+}
+
+.confirmacion h1 {
+    color: #245b46;
+}
+
+.estado-solicitud {
+    background: #f1f7f2;
+    border-radius: 10px;
+    padding: 18px;
+    margin: 25px 0;
+}
+
+.estado-solicitud h2 {
+    margin-top: 0;
+}
+
+.estado-pendiente {
+    color: #946200;
+    font-weight: bold;
+    font-size: 18px;
+}
