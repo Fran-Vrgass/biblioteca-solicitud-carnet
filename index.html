@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,7 +9,7 @@
 <body>
 
     <main class="contenedor">
-        <section class="seccion">
+        <section class="seccion" id="seccionFormulario">
             <h1>Solicitud de carné</h1>
             <p>Biblioteca Pública Miguel Obregón Lizano</p>
 
@@ -46,6 +45,38 @@
                 <p id="mensajeSolicitud"></p>
 
             </form>
+        </section>
+
+        <!-- PANTALLA DE CONFIRMACIÓN -->
+
+        <section class="seccion confirmacion" id="seccionConfirmacion" style="display: none;">
+
+            <h1>¡Solicitud enviada!</h1>
+
+            <p>
+                Tu solicitud de carné fue recibida correctamente
+                por la Biblioteca Pública Miguel Obregón Lizano.
+            </p>
+
+            <div class="estado-solicitud">
+                <h2>Estado de la solicitud</h2>
+                <p class="estado-pendiente">Pendiente de revisión</p>
+            </div>
+
+            <p>
+                El personal de la biblioteca revisará la información
+                proporcionada.
+            </p>
+
+            <p>
+                Una vez que se tome una decisión, recibirás una
+                notificación en el correo electrónico que registraste.
+            </p>
+
+            <p>
+                Gracias por tu interés en formar parte de nuestra biblioteca.
+            </p>
+
         </section>
     </main>
 
