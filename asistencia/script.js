@@ -10,15 +10,54 @@ const supabaseClient = window.supabase.createClient(
 const canvas = document.getElementById("lienzoFirma");
 const ctx = canvas.getContext("2d");
 
+const formulario = document.getElementById("formularioAsistencia");
+const selector = document.getElementById("actividad");
+const mensaje = document.getElementById("mensaje");
+const botonLimpiar = document.getElementById("limpiarFirma");
+const botonEnviar = formulario.querySelector('button[type="submit"]');
+
 let dibujando = false;
 let firmaRealizada = false;
+let pointerActivo = null;
 
-// Cargar actividades activas desde Supabase.
+function configurarPincel() {
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#245b45";
+}
+
+function ajustarLienzo() {
+    const rect = canvas.getBoundingClientRect();
+
+    if (!rect.width || !rect.height) return;
+
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    configurarPincel();
+}
+
+ajustarLienzo();
+
+if ("ResizeObserver" in window) {
+    const observador = new ResizeObserver(ajustarLienzo);
+    observador.observe(canvas.parentElement);
+} else {
+    window.addEventListener("resize", ajustarLienzo);
+}
+
+// ----------------------------------
+// CARGAR ACTIVIDADES DESDE SUPABASE
+// ----------------------------------
+
 async function cargarActividades() {
-    const selector = document.getElementById("actividad");
-
-    selector.innerHTML = '<option value="">Cargando actividades...</option>';
     selector.disabled = true;
+    selector.innerHTML =
+        '<option value="">Cargando actividades...</option>';
 
     try {
         const { data, error } = await supabaseClient
@@ -27,25 +66,52 @@ async function cargarActividades() {
             .eq("activa", true)
             .order("nombre", { ascending: true });
 
-        if (error) throw error;
+        if (error) {
+            console.error("Error Supabase:", {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            });
 
-        selector.innerHTML = '<option value="">Seleccione una actividad</option>';
+            throw error;
+        }
+
+        console.log("Actividades recibidas:", data);
+
+        selector.innerHTML =
+            '<option value="">Seleccione una actividad</option>';
 
         if (!data || data.length === 0) {
-            selector.innerHTML = '<option value="">No hay actividades disponibles</option>';
+            selector.innerHTML =
+                '<option value="">No hay actividades activas</option>';
+
             return;
         }
 
         data.forEach((actividad) => {
             const opcion = document.createElement("option");
+
             opcion.value = actividad.nombre;
             opcion.textContent = actividad.nombre;
+
             selector.appendChild(opcion);
         });
 
+        console.log("Actividades cargadas correctamente.");
+
     } catch (error) {
-        console.error("Error al cargar actividades:", error);
-        selector.innerHTML = '<option value="">No se pudieron cargar las actividades</option>';
+        console.error("No se pudieron cargar las actividades:", error);
+
+        selector.innerHTML =
+            '<option value="">Error al cargar actividades</option>';
+
+        mensaje.textContent =
+            "Error al cargar actividades: " +
+            (error.message || "Error desconocido");
+
+        mensaje.style.color = "red";
+
     } finally {
         selector.disabled = false;
     }
@@ -53,22 +119,9 @@ async function cargarActividades() {
 
 cargarActividades();
 
-function ajustarLienzo() {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.strokeStyle = "#245b45";
-}
-
-ajustarLienzo();
+// ----------------------------------
+// FIRMA DIGITAL
+// ----------------------------------
 
 function obtenerPosicion(evento) {
     const rect = canvas.getBoundingClientRect();
@@ -80,10 +133,19 @@ function obtenerPosicion(evento) {
 }
 
 canvas.addEventListener("pointerdown", (evento) => {
+    if (!evento.isPrimary || pointerActivo !== null) return;
+
+    evento.preventDefault();
+
+    pointerActivo = evento.pointerId;
     dibujando = true;
     firmaRealizada = true;
 
     const posicion = obtenerPosicion(evento);
+
+    ctx.beginPath();
+    ctx.arc(posicion.x, posicion.y, 1.25, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.beginPath();
     ctx.moveTo(posicion.x, posicion.y);
@@ -92,7 +154,9 @@ canvas.addEventListener("pointerdown", (evento) => {
 });
 
 canvas.addEventListener("pointermove", (evento) => {
-    if (!dibujando) return;
+    if (!dibujando || evento.pointerId !== pointerActivo) return;
+
+    evento.preventDefault();
 
     const posicion = obtenerPosicion(evento);
 
@@ -100,38 +164,52 @@ canvas.addEventListener("pointermove", (evento) => {
     ctx.stroke();
 });
 
-function terminarDibujo() {
+function terminarDibujo(evento) {
+    if (evento && evento.pointerId !== pointerActivo) return;
+
     dibujando = false;
+    pointerActivo = null;
+    ctx.beginPath();
 }
 
 canvas.addEventListener("pointerup", terminarDibujo);
 canvas.addEventListener("pointercancel", terminarDibujo);
+canvas.addEventListener("lostpointercapture", terminarDibujo);
 
-document.getElementById("limpiarFirma")
-    .addEventListener("click", () => {
-        const rect = canvas.getBoundingClientRect();
+function limpiarFirma() {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
-        ctx.clearRect(0, 0, rect.width, rect.height);
-        firmaRealizada = false;
-    });
+    dibujando = false;
+    pointerActivo = null;
+    firmaRealizada = false;
+    ctx.beginPath();
+}
 
-const formulario = document.getElementById("formularioAsistencia");
+botonLimpiar.addEventListener("click", () => {
+    limpiarFirma();
+    mensaje.textContent = "";
+});
+
+// ----------------------------------
+// REGISTRAR ASISTENCIA
+// ----------------------------------
 
 formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
 
     const carnet = document.getElementById("carnet").value.trim();
-    const actividad = document.getElementById("actividad").value;
-    const mensaje = document.getElementById("mensaje");
-    const boton = formulario.querySelector('button[type="submit"]');
+    const actividad = selector.value;
 
-    if (carnet === "") {
+    if (!carnet) {
         mensaje.textContent = "Debe ingresar su número de carné.";
         mensaje.style.color = "red";
         return;
     }
 
-    if (actividad === "") {
+    if (!actividad) {
         mensaje.textContent = "Debe seleccionar una actividad.";
         mensaje.style.color = "red";
         return;
@@ -148,14 +226,15 @@ formulario.addEventListener("submit", async (evento) => {
     )?.value;
 
     if (!tokenTurnstile) {
-        mensaje.textContent = "Por favor, completá la verificación de seguridad.";
+        mensaje.textContent =
+            "Por favor, completá la verificación de seguridad.";
         mensaje.style.color = "red";
         return;
     }
 
     const firma = canvas.toDataURL("image/png");
 
-    boton.disabled = true;
+    botonEnviar.disabled = true;
     mensaje.textContent = "Registrando asistencia...";
     mensaje.style.color = "black";
 
@@ -164,36 +243,44 @@ formulario.addEventListener("submit", async (evento) => {
             "registrar-asistencia",
             {
                 body: {
-                    carnet: carnet,
-                    actividad: actividad,
-                    firma: firma,
-                    tokenTurnstile: tokenTurnstile
+                    carnet,
+                    actividad,
+                    firma,
+                    tokenTurnstile
                 }
             }
         );
 
         if (error) {
-            const respuesta = await error.context?.json?.();
+            let respuesta = null;
 
-            if (respuesta?.error) {
-                mensaje.textContent = respuesta.error;
-                mensaje.style.color = "red";
-                return;
-            }
+            try {
+                respuesta = await error.context?.json?.();
+            } catch (_) {}
 
-            throw error;
+            throw new Error(
+                respuesta?.error || error.message
+            );
         }
 
-        mensaje.textContent = data.mensaje;
+        mensaje.textContent =
+            data?.mensaje || "Asistencia registrada correctamente.";
+
         mensaje.style.color = "green";
 
+        limpiarFirma();
+        formulario.reset();
+
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error al registrar asistencia:", error);
+
         mensaje.textContent =
-            "No se pudo registrar la asistencia. Verifique los datos e intente nuevamente.";
+            error.message ||
+            "No se pudo registrar la asistencia.";
+
         mensaje.style.color = "red";
 
     } finally {
-        boton.disabled = false;
+        botonEnviar.disabled = false;
     }
 });
