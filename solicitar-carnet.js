@@ -82,4 +82,3 @@ console.log("Respuesta de solicitud:", {
         boton.disabled = false;
     }
 });
-```
