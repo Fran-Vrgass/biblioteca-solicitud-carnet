@@ -76,8 +76,6 @@ console.log("Respuesta de solicitud:", {
         "No se pudo enviar la solicitud. Intentá nuevamente.";
 
     mensaje.style.color = "#b00020";
-}
-
     } finally {
         boton.disabled = false;
     }
