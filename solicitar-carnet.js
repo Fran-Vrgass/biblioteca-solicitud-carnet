@@ -64,8 +64,17 @@ console.log("Respuesta de solicitud:", {
         document.getElementById("seccionFormulario").style.display = "none";
         document.getElementById("seccionConfirmacion").style.display = "block";
 
-    } catch {
-        mensaje.textContent = "No se pudo conectar con el servidor. Intentá nuevamente.";
+   
+} catch (error) {
+    console.error("Error al enviar solicitud:", error);
+
+    mensaje.textContent =
+        error.message ||
+        "No se pudo enviar la solicitud. Intentá nuevamente.";
+
+    mensaje.style.color = "#b00020";
+}
+
     } finally {
         boton.disabled = false;
     }
