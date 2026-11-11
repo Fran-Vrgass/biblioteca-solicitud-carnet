@@ -36,7 +36,25 @@ formulario.addEventListener("submit", async (e) => {
             }
         );
 
-        const resultado = await respuesta.json();
+       
+const textoRespuesta = await respuesta.text();
+
+let resultado;
+
+try {
+    resultado = JSON.parse(textoRespuesta);
+} catch {
+    throw new Error(
+        "El servidor devolvió una respuesta no válida. Código: " +
+        respuesta.status
+    );
+}
+
+console.log("Respuesta de solicitud:", {
+    estadoHTTP: respuesta.status,
+    resultado
+});
+
 
         if (!respuesta.ok || !resultado.success) {
             mensaje.textContent = resultado.error || "No se pudo enviar la solicitud.";
