@@ -2,9 +2,6 @@ const SUPABASE_URL = "https://yhzoryuhrrkggtlyppjt.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Kaw2rZJutbc5BmrIrEmN6Q_A7kSUebl";
 
 const formulario = document.getElementById("formularioSolicitud");
-console.log("Formulario de carné: JavaScript cargado");
-
-alert("El JavaScript del formulario está funcionando");
 
 formulario.addEventListener("submit", async (e) => {
     e.preventDefault();
